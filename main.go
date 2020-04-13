@@ -4,13 +4,29 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
+func buildAddr(port uint) string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	ip := localAddr.IP.String()
+
+	return fmt.Sprintf("%s:%d", ip, port)
+}
+
 func main() {
 	filePath := flag.String("f", "", "File path")
+	port := flag.Uint("p", 3000, "Server port")
 	flag.Parse()
 
 	if len(*filePath) == 0 {
@@ -32,5 +48,8 @@ func main() {
 		http.ServeFile(w, r, file.Name())
 	})
 
-	log.Fatalln(http.ListenAndServe(":8080", nil))
+	addr := buildAddr(*port)
+
+	fmt.Printf("Your file is waiting at http://%s\n", addr)
+	log.Fatalln(http.ListenAndServe(addr, nil))
 }
