@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/sriosdev/zipper"
 )
 
 func buildAddr(port uint) string {
@@ -25,21 +27,36 @@ func buildAddr(port uint) string {
 }
 
 func main() {
-	filePath := flag.String("f", "", "File path")
+	// Get flags parameters
+	path := flag.String("f", "", "File path")
 	port := flag.Uint("p", 3000, "Server port")
 	flag.Parse()
 
-	if len(*filePath) == 0 {
+	if len(*path) == 0 {
 		fmt.Println("The file path is required")
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
 
-	file, err := os.Open(*filePath)
-
+	file, err := os.Open(*path)
 	if err != nil {
 		fmt.Println("Can't open the file or does not exist")
 		os.Exit(1)
+	}
+
+	fi, err := file.Stat()
+	if err != nil {
+		log.Fatalln(err)
+		os.Exit(1)
+	}
+
+	// Directories are compressed into a ZIP file
+	if fi.IsDir() {
+		file, err = zipper.ZipFolder(file)
+		if err != nil {
+			log.Fatalln(err)
+			os.Exit(1)
+		}
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
