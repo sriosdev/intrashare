@@ -52,21 +52,31 @@ func main() {
 
 	// Directories are compressed into a ZIP file
 	if fi.IsDir() {
+		fmt.Println("\nCompressing directory...")
+
 		file, err = zipper.ZipFolder(file)
 		if err != nil {
 			log.Fatalln(err)
 			os.Exit(1)
 		}
+
+		fmt.Println("Directory compressed successfuly!")
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fileName := filepath.Base(file.Name())
 		w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 		http.ServeFile(w, r, file.Name())
+
+		fmt.Println("Finishing...")
+		os.Exit(0)
 	})
 
 	addr := buildAddr(*port)
 
-	fmt.Printf("Your file is waiting at http://%s\n", addr)
+	fmt.Println("\n  Your file is waiting at:")
+	fmt.Print("  - Download link: ")
+	fmt.Printf("\033[1;36m%s\033[0m", addr)
+	fmt.Println("\n\n  Remember you can only access link once.\n")
 	log.Fatalln(http.ListenAndServe(addr, nil))
 }
