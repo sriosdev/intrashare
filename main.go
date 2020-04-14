@@ -68,6 +68,13 @@ func main() {
 		w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 		http.ServeFile(w, r, file.Name())
 
+		// Remove the temp ZIP from disk once the link is visited
+		if fi.IsDir() {
+			if err = os.Remove(file.Name()); err != nil {
+				log.Fatalln(err)
+			}
+		}
+
 		fmt.Println("Finishing...")
 		os.Exit(0)
 	})
