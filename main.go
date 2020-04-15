@@ -43,6 +43,7 @@ func main() {
 		fmt.Println("Can't open the file or does not exist")
 		os.Exit(1)
 	}
+	defer file.Close()
 
 	fi, err := file.Stat()
 	if err != nil {
@@ -59,6 +60,7 @@ func main() {
 			log.Fatalln(err)
 			os.Exit(1)
 		}
+		defer file.Close()
 
 		fmt.Println("Directory compressed successfuly!")
 	}
@@ -83,7 +85,7 @@ func main() {
 
 	fmt.Println("\n  Your file is waiting at:")
 	fmt.Print("  - Download link: ")
-	fmt.Printf("\033[1;36m%s\033[0m", addr)
+	fmt.Printf("\033[1;36m%s%s\033[0m", "http://", addr)
 	fmt.Println("\n\n  Remember you can only access link once.\n")
 	log.Fatalln(http.ListenAndServe(addr, nil))
 }
